@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - Hotel Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>HMS Staff</h2>
+                <p id="userInfo"></p>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" data-section="guests" class="active">Guest Registry</a></li>
+                <li><a href="#" data-section="rooms">View Rooms</a></li>
+                <li><a href="#" data-section="reservations">Reservations</a></li>
+                <li><a href="#" data-section="checkin">Check-in</a></li>
+                <li><a href="#" data-section="checkout">Check-out</a></li>
+                <li><a href="#" id="logoutBtn">Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <!-- Guest Registry Section -->
+            <section id="guests" class="content-section active">
+                <div class="section-header">
+                    <h2>Guest Registry</h2>
+                    <button class="btn btn-primary" id="registerGuestBtn">Register New Guest</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="guestsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Rooms Section -->
+            <section id="rooms" class="content-section">
+                <div class="section-header">
+                    <h2>View Rooms</h2>
+                </div>
+
+                <div class="filters">
+                    <select id="roomTypeFilter">
+                        <option value="">All Types</option>
+                        <option value="Single">Single</option>
+                        <option value="Double">Double</option>
+                        <option value="Suite">Suite</option>
+                    </select>
+                    <select id="roomStatusFilter">
+                        <option value="">All Status</option>
+                        <option value="Available">Available</option>
+                        <option value="Occupied">Occupied</option>
+                    </select>
+                    <button class="btn btn-secondary" id="filterRoomsBtn">Apply Filters</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="roomsTable">
+                        <thead>
+                            <tr>
+                                <th>Room ID</th>
+                                <th>Type</th>
+                                <th>Rate/Night</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Reservations Section -->
+            <section id="reservations" class="content-section">
+                <div class="section-header">
+                    <h2>Reservations Management</h2>
+                    <button class="btn btn-primary" id="bookRoomBtn">Book Room</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="reservationsTable">
+                        <thead>
+                            <tr>
+                                <th>Res ID</th>
+                                <th>Room</th>
+                                <th>Guest</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Status</th>
+                                <th>Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Check-in Section -->
+            <section id="checkin" class="content-section">
+                <div class="section-header">
+                    <h2>Check-in Guest</h2>
+                </div>
+
+                <div class="table-container">
+                    <table id="checkinTable">
+                        <thead>
+                            <tr>
+                                <th>Res ID</th>
+                                <th>Room</th>
+                                <th>Guest</th>
+                                <th>Check-in Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Check-out Section -->
+            <section id="checkout" class="content-section">
+                <div class="section-header">
+                    <h2>Check-out Guest</h2>
+                </div>
+
+                <div class="table-container">
+                    <table id="checkoutTable">
+                        <thead>
+                            <tr>
+                                <th>Res ID</th>
+                                <th>Room</th>
+                                <th>Guest</th>
+                                <th>Check-out Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Register Guest Modal -->
+    <div id="guestModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Register New Guest</h2>
+            <form id="guestForm" class="form">
+                <div class="form-group">
+                    <label for="guestName">Full Name</label>
+                    <input type="text" id="guestName" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="guestPhone">Phone Number</label>
+                    <input type="tel" id="guestPhone" name="phone" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="guestEmail">Email Address</label>
+                    <input type="email" id="guestEmail" name="email" required>
+                    <small>Must be @gmail.com or @diu.edu.bd</small>
+                </div>
+
+                <div id="guestErrorMessage" class="error-message"></div>
+
+                <button type="submit" class="btn btn-primary">Register Guest</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Book Room Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Book Room</h2>
+            <form id="bookingForm" class="form">
+                <div class="form-group">
+                    <label for="bookingRoomId">Room ID</label>
+                    <input type="number" id="bookingRoomId" name="room_id" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookingGuestName">Guest Name</label>
+                    <input type="text" id="bookingGuestName" name="guest_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookingCheckin">Check-in Date</label>
+                    <input type="date" id="bookingCheckin" name="checkin" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookingCheckout">Check-out Date</label>
+                    <input type="date" id="bookingCheckout" name="checkout" required>
+                </div>
+
+                <div id="bookingErrorMessage" class="error-message"></div>
+
+                <button type="submit" class="btn btn-primary">Create Reservation</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkoutModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Check-out Guest</h2>
+            <form id="checkoutForm" class="form">
+                <input type="hidden" id="checkoutResId">
+
+                <div class="form-group">
+                    <label for="promoCode">Promo Code (Optional)</label>
+                    <input type="text" id="promoCode" name="promo_code" placeholder="e.g., SAVE10">
+                </div>
+
+                <div id="checkoutErrorMessage" class="error-message"></div>
+
+                <button type="submit" class="btn btn-primary">Process Checkout</button>
+            </form>
+
+            <div id="invoiceDisplay" style="display: none;">
+                <h3>Invoice Generated</h3>
+                <div id="invoiceDetails"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/staff.js"></script>
+</body>
+</html>
