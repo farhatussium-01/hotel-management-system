@@ -1,10 +1,10 @@
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
-from models import db, User, Room, Reservation, Guest
-from config import Config
+from .models import db, User, Room, Reservation, Guest
+from .config import Config
 from datetime import datetime, timedelta
 from functools import wraps
-from invoice_generator import generate_invoice_pdf
+from .invoice_generator import generate_invoice_pdf
 import jwt
 import os
 
