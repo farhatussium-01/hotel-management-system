@@ -3,6 +3,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Detect Vercel environment
+IS_VERCEL = bool(os.getenv('VERCEL')) or bool(os.getenv('VERCEL_ENV'))
+
 class Config:
     # Flask Configuration
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -19,16 +22,23 @@ class Config:
     if DATABASE_URL:
         if DATABASE_URL.startswith("postgres://"):
             DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        elif DATABASE_URL.startswith("mysql://"):
+            DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+pymysql://", 1)
+        elif DATABASE_URL.startswith("mysql2://"):
+            DATABASE_URL = DATABASE_URL.replace("mysql2://", "mysql+pymysql://", 1)
         SQLALCHEMY_DATABASE_URI = DATABASE_URL
     elif TIDB_HOST and TIDB_HOST != 'localhost':
         SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{TIDB_USER}:{TIDB_PASSWORD}@{TIDB_HOST}:{TIDB_PORT}/{TIDB_DATABASE}?ssl_verify_cert=true&ssl_verify_identity=true"
-    elif TIDB_HOST == 'localhost' and not os.getenv('VERCEL'):
+    elif TIDB_HOST == 'localhost' and not IS_VERCEL:
         SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{TIDB_USER}:{TIDB_PASSWORD}@{TIDB_HOST}:{TIDB_PORT}/{TIDB_DATABASE}"
     else:
         # Fallback to SQLite database in /tmp for Vercel/serverless environments or local fallback
-        db_dir = '/tmp' if os.getenv('VERCEL') else os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        db_path = os.path.join(db_dir, 'hotel_management.db')
-        SQLALCHEMY_DATABASE_URI = f"sqlite:///{db_path}"
+        db_dir = '/tmp' if IS_VERCEL else os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        db_path = os.path.join(db_dir, 'hotel_management.db').replace('\\', '/')
+        if db_path.startswith('/'):
+            SQLALCHEMY_DATABASE_URI = f"sqlite:////{db_path.lstrip('/')}"
+        else:
+            SQLALCHEMY_DATABASE_URI = f"sqlite:///{db_path}"
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
@@ -37,12 +47,26 @@ class Config:
     }
 
     # Application Configuration
-    TAX_RATE = float(os.getenv('TAX_RATE', '0.12'))
-    PROMO_CODE_SAVE10 = float(os.getenv('PROMO_CODE_SAVE10', '0.10'))
+    try:
+        TAX_RATE = float(os.getenv('TAX_RATE', '0.12'))
+    except (ValueError, TypeError):
+        TAX_RATE = 0.12
+
+    try:
+        PROMO_CODE_SAVE10 = float(os.getenv('PROMO_CODE_SAVE10', '0.10'))
+    except (ValueError, TypeError):
+        PROMO_CODE_SAVE10 = 0.10
 
     # File Upload Configuration
-    if os.getenv('VERCEL'):
+    if IS_VERCEL:
         INVOICE_FOLDER = '/tmp/invoices'
     else:
         INVOICE_FOLDER = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'static', 'invoices')
+
+    # Ensure invoice folder exists
+    try:
+        os.makedirs(INVOICE_FOLDER, exist_ok=True)
+    except Exception:
+        pass
+
 
