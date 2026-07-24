@@ -1,9 +1,12 @@
 {
-  "version": 2,
   "builds": [
     {
       "src": "backend/app.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -13,15 +16,19 @@
     },
     {
       "src": "/css/(.*)",
-      "dest": "backend/app.py"
+      "dest": "frontend/css/$1"
     },
     {
       "src": "/js/(.*)",
-      "dest": "backend/app.py"
+      "dest": "frontend/js/$1"
+    },
+    {
+      "src": "/pages/(.*)",
+      "dest": "frontend/pages/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "backend/app.py"
+      "dest": "frontend/pages/login.html"
     }
   ]
 }
