@@ -7,12 +7,23 @@ from functools import wraps
 from .invoice_generator import generate_invoice_pdf
 import jwt
 import os
+from flask import send_from_directory
+import os
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
 CORS(app)
 
 db.init_app(app)
+FRONTEND_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)),
+    "frontend"
+)
+
+@app.route("/")
+def index():
+    return send_from_directory(FRONTEND_DIR, "index.html")
 
 # Create invoice directory if it doesn't exist
 os.makedirs(app.config['INVOICE_FOLDER'], exist_ok=True)
