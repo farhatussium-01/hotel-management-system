@@ -1,52 +1,40 @@
-from flask import Flask, jsonify, request, send_file, send_from_directory
-from flask_cors import CORS
-from .models import db, User, Room, Reservation, Guest
-from .config import Config
+import sys
+import os
 from datetime import datetime, timedelta
 from functools import wraps
-from .invoice_generator import generate_invoice_pdf
 import jwt
-import os
-from flask import send_from_directory
-import os
+from flask import Flask, jsonify, request, send_file, send_from_directory, redirect
+from flask_cors import CORS
 
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
+try:
+    from models import db, User, Room, Reservation, Guest
+    from config import Config
+    from invoice_generator import generate_invoice_pdf
+except ImportError:
+    from .models import db, User, Room, Reservation, Guest
+    from .config import Config
+    from .invoice_generator import generate_invoice_pdf
 
 app = Flask(__name__)
 app.config.from_object(Config)
 CORS(app)
 
 db.init_app(app)
-from flask import send_from_directory, redirect
-import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 PAGES_DIR = os.path.join(BASE_DIR, "frontend", "pages")
 CSS_DIR = os.path.join(BASE_DIR, "frontend", "css")
 JS_DIR = os.path.join(BASE_DIR, "frontend", "js")
 
-
-@app.route("/")
-def home():
-    return redirect("/login.html")
-
-
-@app.route("/<filename>.html")
-def html_pages(filename):
-    return send_from_directory(PAGES_DIR, f"{filename}.html")
-
-
-@app.route("/css/<path:filename>")
-def css(filename):
-    return send_from_directory(CSS_DIR, filename)
-
-
-@app.route("/js/<path:filename>")
-def js(filename):
-    return send_from_directory(JS_DIR, filename)
-
 # Create invoice directory if it doesn't exist
-os.makedirs(app.config['INVOICE_FOLDER'], exist_ok=True)
+try:
+    os.makedirs(app.config['INVOICE_FOLDER'], exist_ok=True)
+except Exception:
+    pass
 
 # JWT token decorator
 def token_required(f):
@@ -742,6 +730,12 @@ def init_database():
         db.session.commit()
         print("Database initialized successfully!")
 
-if __name__ == '__main__':
+# Ensure database is initialized on startup for serverless / production environments
+try:
     init_database()
+except Exception as e:
+    print(f"Database auto-init note: {e}")
+
+if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+

@@ -1,5 +1,10 @@
 {
+  "version": 2,
   "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    },
     {
       "src": "backend/app.py",
       "use": "@vercel/python"
@@ -12,7 +17,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/app.py"
+      "dest": "api/index.py"
     },
     {
       "src": "/css/(.*)",
@@ -25,6 +30,18 @@
     {
       "src": "/pages/(.*)",
       "dest": "frontend/pages/$1"
+    },
+    {
+      "src": "/(admin|staff|guest|login|register)\\.html",
+      "dest": "frontend/pages/$1.html"
+    },
+    {
+      "src": "/(.*\\.html)",
+      "dest": "frontend/pages/$1"
+    },
+    {
+      "src": "/",
+      "dest": "frontend/pages/login.html"
     },
     {
       "src": "/(.*)",
