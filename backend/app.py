@@ -16,18 +16,34 @@ app.config.from_object(Config)
 CORS(app)
 
 db.init_app(app)
-FRONTEND_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)),
-    "frontend"
-)
+from flask import send_from_directory, redirect
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+PAGES_DIR = os.path.join(BASE_DIR, "frontend", "pages")
+CSS_DIR = os.path.join(BASE_DIR, "frontend", "css")
+JS_DIR = os.path.join(BASE_DIR, "frontend", "js")
+
 
 @app.route("/")
 def home():
-    return send_from_directory(FRONTEND_DIR, "index.html")
+    return redirect("/login.html")
 
-@app.route("/<path:path>")
-def frontend(path):
-    return send_from_directory(FRONTEND_DIR, path)
+
+@app.route("/<filename>.html")
+def html_pages(filename):
+    return send_from_directory(PAGES_DIR, f"{filename}.html")
+
+
+@app.route("/css/<path:filename>")
+def css(filename):
+    return send_from_directory(CSS_DIR, filename)
+
+
+@app.route("/js/<path:filename>")
+def js(filename):
+    return send_from_directory(JS_DIR, filename)
 
 # Create invoice directory if it doesn't exist
 os.makedirs(app.config['INVOICE_FOLDER'], exist_ok=True)
