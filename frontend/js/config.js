@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = "https://hotel-management-system-5sr3zesa0-sium1.vercel.app/api";
+const API_BASE_URL = "https://hotel-management-system-dusky-zeta.vercel.app";
 
 // Get token from localStorage
 function getToken() {
