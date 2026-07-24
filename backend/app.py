@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask_cors import CORS
 from .models import db, User, Room, Reservation, Guest
 from .config import Config
@@ -22,8 +22,12 @@ FRONTEND_DIR = os.path.join(
 )
 
 @app.route("/")
-def index():
+def home():
     return send_from_directory(FRONTEND_DIR, "index.html")
+
+@app.route("/<path:path>")
+def frontend(path):
+    return send_from_directory(FRONTEND_DIR, path)
 
 # Create invoice directory if it doesn't exist
 os.makedirs(app.config['INVOICE_FOLDER'], exist_ok=True)
