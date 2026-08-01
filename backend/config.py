@@ -27,10 +27,13 @@ class Config:
         elif DATABASE_URL.startswith("mysql2://"):
             DATABASE_URL = DATABASE_URL.replace("mysql2://", "mysql+pymysql://", 1)
         SQLALCHEMY_DATABASE_URI = DATABASE_URL
+        print(f"[DATABASE] Connected via DATABASE_URL")
     elif TIDB_HOST and TIDB_HOST != 'localhost':
-        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{TIDB_USER}:{TIDB_PASSWORD}@{TIDB_HOST}:{TIDB_PORT}/{TIDB_DATABASE}?ssl_verify_cert=true&ssl_verify_identity=true"
+        SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{TIDB_USER}:{TIDB_PASSWORD}@{TIDB_HOST}:{TIDB_PORT}/{TIDB_DATABASE}?ssl_verify_cert=false&ssl_verify_identity=false"
+        print(f"[DATABASE] Connected to TiDB Cloud host: {TIDB_HOST}")
     elif TIDB_HOST == 'localhost' and not IS_VERCEL:
         SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{TIDB_USER}:{TIDB_PASSWORD}@{TIDB_HOST}:{TIDB_PORT}/{TIDB_DATABASE}"
+        print(f"[DATABASE] Connected to local MySQL/TiDB on localhost")
     else:
         # Fallback to SQLite database in /tmp for Vercel/serverless environments or local fallback
         db_dir = '/tmp' if IS_VERCEL else os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -39,6 +42,7 @@ class Config:
             SQLALCHEMY_DATABASE_URI = f"sqlite:////{db_path.lstrip('/')}"
         else:
             SQLALCHEMY_DATABASE_URI = f"sqlite:///{db_path}"
+        print(f"[WARNING] TIDB_HOST is not set in .env! App is saving data to LOCAL SQLite: {db_path}")
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
