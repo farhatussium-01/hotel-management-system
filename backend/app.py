@@ -82,25 +82,27 @@ def register():
         if field not in data or not data[field]:
             return jsonify({'error': f'{field} is required'}), 400
 
-    # Check if username already exists
-    if User.query.filter_by(username=data['username']).first():
+    username = str(data['username']).strip()
+
+    # Check if username already exists (case-insensitive)
+    if User.query.filter(db.func.lower(User.username) == db.func.lower(username)).first():
         return jsonify({'error': 'Username already exists'}), 400
 
     try:
         # Create new user (guest role by default)
         user = User(
-            username=data['username'],
+            username=username,
             role=data.get('role', 'guest'),
             dob=datetime.strptime(data['dob'], '%Y-%m-%d').date(),
             active=True
         )
-        user.set_password(data['password'])
+        user.set_password(str(data['password']))
 
         db.session.add(user)
         db.session.commit()
 
         return jsonify({'message': 'User registered successfully', 'user': user.to_dict()}), 201
-    except ValueError as e:
+    except ValueError:
         return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
     except Exception as e:
         db.session.rollback()
@@ -113,9 +115,12 @@ def login():
     if not data or not data.get('username') or not data.get('password'):
         return jsonify({'error': 'Username and password are required'}), 400
 
-    user = User.query.filter_by(username=data['username']).first()
+    username = str(data['username']).strip()
+    password = str(data['password'])
 
-    if not user or not user.active or not user.check_password(data['password']):
+    user = User.query.filter(db.func.lower(User.username) == db.func.lower(username)).first()
+
+    if not user or not user.active or not user.check_password(password):
         return jsonify({'error': 'Invalid username or password'}), 401
 
     # Generate JWT token
@@ -137,7 +142,8 @@ def forgot_password():
     if not data or not data.get('username') or not data.get('dob'):
         return jsonify({'error': 'Username and date of birth are required'}), 400
 
-    user = User.query.filter_by(username=data['username']).first()
+    username = str(data['username']).strip()
+    user = User.query.filter(db.func.lower(User.username) == db.func.lower(username)).first()
 
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -159,7 +165,8 @@ def reset_password():
     if not data or not data.get('username') or not data.get('dob') or not data.get('new_password'):
         return jsonify({'error': 'Username, date of birth, and new password are required'}), 400
 
-    user = User.query.filter_by(username=data['username']).first()
+    username = str(data['username']).strip()
+    user = User.query.filter(db.func.lower(User.username) == db.func.lower(username)).first()
 
     if not user:
         return jsonify({'error': 'User not found'}), 404
@@ -169,7 +176,7 @@ def reset_password():
         if user.dob != dob:
             return jsonify({'error': 'Date of birth does not match'}), 400
 
-        user.set_password(data['new_password'])
+        user.set_password(str(data['new_password']))
         db.session.commit()
 
         return jsonify({'message': 'Password reset successfully'}), 200
