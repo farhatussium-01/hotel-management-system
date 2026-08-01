@@ -6,10 +6,16 @@ import os
 load_dotenv()
 
 # TiDB connection details
-host = os.getenv('TIDB_HOST')
-port = int(os.getenv('TIDB_PORT'))
-user = os.getenv('TIDB_USER')
-password = os.getenv('TIDB_PASSWORD')
+host = os.getenv('TIDB_HOST', '').strip()
+port_env = os.getenv('TIDB_PORT', '4000').strip()
+port = int(port_env) if port_env.isdigit() else 4000
+user = os.getenv('TIDB_USER', '').strip()
+password = os.getenv('TIDB_PASSWORD', '').strip()
+
+if not host or not user:
+    print("[ERROR] TIDB_HOST and TIDB_USER must be set in your .env file!")
+    print("Please create a .env file from .env.example with your TiDB Cloud credentials.")
+    exit(1)
 
 print(f"Connecting to TiDB at {host}:{port} as {user}")
 
@@ -20,8 +26,8 @@ try:
         port=port,
         user=user,
         password=password,
-        ssl_verify_cert=True,
-        ssl_verify_identity=True
+        ssl_verify_cert=False,
+        ssl_verify_identity=False
     )
 
     print("[OK] Connected successfully to TiDB!")
